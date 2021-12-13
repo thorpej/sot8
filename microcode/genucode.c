@@ -736,10 +736,10 @@ gen_MOV_imm(void)
  * +-------------------------------+-------------------------------+
  *
  * Flag values:
- * JC -> 0 0 0 [CJMP_C]
- * JZ -> 0 0 1 [CJMP_Z]
- * JO -> 0 1 0 [CJMP_O]
- * JN -> 1 0 0 [CJMP_N]
+ * JC -> 0 0 0 [CC_C]
+ * JZ -> 0 0 1 [CC_Z]
+ * JO -> 0 1 0 [CC_O]
+ * JN -> 1 0 0 [CC_N]
  *
  * JNC, JNZ, JNO, JNN -- inverse of the above, encoded as:
  *
@@ -775,19 +775,19 @@ gen_MOV_cond_jmp(void)
 	gen_imm(true_steps, _PCW);
 
 	/* JC */
-	fill_carry_insn(OPCODE(MOV, IMM, CJMP_C), false, false_steps,
+	fill_carry_insn(OPCODE(MOV, IMM, CC_C), false, false_steps,
 	    NSTEPS(false_steps));
-	fill_carry_insn(OPCODE(MOV, IMM, CJMP_C), true, true_steps,
+	fill_carry_insn(OPCODE(MOV, IMM, CC_C), true, true_steps,
 	    NSTEPS(true_steps));
 
 	/* JNC */
-	fill_carry_insn(OPCODE(MOV, SPa, CJMP_C), false, true_steps,
+	fill_carry_insn(OPCODE(MOV, SPa, CC_C), false, true_steps,
 	    NSTEPS(true_steps));
-	fill_carry_insn(OPCODE(MOV, SPa, CJMP_C), true, false_steps,
+	fill_carry_insn(OPCODE(MOV, SPa, CC_C), true, false_steps,
 	    NSTEPS(false_steps));
 
 	unsigned int flag;
-	for (flag = CJMP_Z; flag <= CJMP_N; flag <<= 1) {
+	for (flag = CC_Z; flag <= CC_N; flag <<= 1) {
 		/* JZ, JO, JN */
 		fill_cond_insn(OPCODE(MOV, IMM, flag), false, false_steps,
 		    NSTEPS(false_steps));

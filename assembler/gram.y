@@ -919,16 +919,16 @@ alu_fn_name(unsigned int fn)
 }
 
 static const char * const ccode_names[] = {
-	[CJMP_C]	=	"C",
-	[CJMP_Z]	=	"Z",
-	[CJMP_O]	=	"O",
-	[CJMP_N]	=	"N",
+	[CC_C]		=	"C",
+	[CC_Z]		=	"Z",
+	[CC_O]		=	"O",
+	[CC_N]		=	"N",
 };
 
 static const char *
 ccode_name(unsigned int ccode)
 {
-	assert(ccode <= CJMP_N && ccode_names[ccode] != NULL);
+	assert(ccode <= CC_N && ccode_names[ccode] != NULL);
 	return ccode_names[ccode];
 }
 
@@ -1240,22 +1240,22 @@ gen_cond_jmp(int which, struct operand *opr3)
 	switch (which) {
 	case INSN_JC:
 	case INSN_JNC:
-		flag = CJMP_C;
+		flag = CC_C;
 		break;
 	
 	case INSN_JZ:
 	case INSN_JNZ:
-		flag = CJMP_Z;
+		flag = CC_Z;
 		break;
 	
 	case INSN_JO:
 	case INSN_JNO:
-		flag = CJMP_O;
+		flag = CC_O;
 		break;
 	
 	case INSN_JN:
 	case INSN_JNN:
-		flag = CJMP_N;
+		flag = CC_N;
 		break;
 	
 	default:

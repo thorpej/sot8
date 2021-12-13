@@ -37,11 +37,11 @@ SOFTWARE.
 #define	OPC_ST			2
 #define	OPC_ALU			3
 
-/* Conditional jump codes */
-#define	CJMP_C			0
-#define	CJMP_Z			1
-#define	CJMP_O			2
-#define	CJMP_N			4
+/* Condition codes */
+#define	CC_C			0
+#define	CC_Z			1
+#define	CC_O			2
+#define	CC_N			4
 
 /*
  * These ALU function selectors map directly to the function
