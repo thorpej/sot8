@@ -633,7 +633,7 @@ F 3 "http://www.ti.com/lit/gpn/sn74hct00" H 5450 4350 50  0001 C CNN
 	2    5450 4350
 	1    0    0    -1  
 $EndComp
-Text GLabel 1650 4950 0    50   Input ~ 10
+Text GLabel 1650 4950 0    50   Input ~ 0
 ~HLT
 Wire Wire Line
 	1650 4950 4350 4950
@@ -648,9 +648,9 @@ Wire Wire Line
 Connection ~ 5150 4350
 Wire Wire Line
 	5150 4350 5150 4450
-Text GLabel 5900 4350 2    50   Output ~ 10
+Text GLabel 5900 4350 2    50   Output ~ 0
 CLK
-Text GLabel 5900 4650 2    50   Output ~ 10
+Text GLabel 5900 4650 2    50   Output ~ 0
 ~CLK
 Wire Wire Line
 	5000 4350 5000 4650
