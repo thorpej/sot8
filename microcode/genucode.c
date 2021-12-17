@@ -121,13 +121,32 @@ SOFTWARE.
  * Side note: because this means that the ALU now has 2 registers (B-operand
  * and the result register), I am renaming the result register to ALU_R.
  *
- * ==> _SFL (Suppress Flags) signal
+ * ==> Changes to Condition Codes
  *
- * A new signal has been added to the control unit that suppresses the
- * latching of the ALU flags output into the control unit's flags register.
- * This allows us to avoid clobbering flags on instructions that use the
- * ALU implicitly (foreshadowing!).  It's an active-low signal, and is
- * implemented by simply AND'ing it with the CP signal on that flags register.
+ * The condition codes work somewhat differently on this CPU, compared to
+ * the Bates design.  The CC register is not located with the ALU in this
+ * design.  Instead, it resides in the control unit and can be updated from
+ * two different places: the ALU (by asserting the ACC signal) or the bus
+ * (by asserting BCC signal).  This allows us to do a couple of useful things:
+ *
+ * a) selectively update the flags from the ALU, in case we're not doing a
+ * strictly arithmentic operation (like SP-relative loads/stores; see below).
+ *
+ * b) update the Z and N flags during a LD or MOV into one of the general
+ * purpose registers, which can reduce trhe following pattern:
+ *
+ *	LD	Ra, #1[SP]
+ *	TST	Ra
+ *	JZ	$somewhere
+ *
+ * to this:
+ *
+ *	LD	RA, #1[SP]
+ *	JZ	$somewhere
+ *
+ * This is done by placing a selector in front of the CC register and
+ * using some combinational logic to enable the register input when
+ * either ACC or BCC is asserted.
  *
  * ==> SP-relative loads/stores
  *
@@ -223,11 +242,9 @@ SOFTWARE.
  *	.
  * multiply:
  *	LD	Ra, #1[SP]	; Ra = first argument
+ *	JZ	Lmul02		; Get out if Ra == 0.
  *	LD	Rc, #2[SP]	; Rc = second argument
- *	TST	Ra		; Ra == 0?
- *	JZ	Lmul03		; Yes, return 0.
- *	TST	Rc		; Rc == 0?
- *	JZ	Lmul03		; Yes, return 0.
+ *	JZ	Lmul03		; Get out if Rc == 0.
  *	MOV	Rb, Ra		; Rb = Ra
  * Lmul01:
  * 	DEC	Rc		; Rc--
@@ -269,7 +286,7 @@ typedef	uint32_t	signal_word;
 #define	_ALB	BIT(4)		/* ALU_B write */
 #define	_ALW	BIT(5)		/* ALU_R write */
 #define	_ALE	BIT(6)		/* ALU_R enable */
-#define	_SFL	BIT(7)		/* Suppress flags update */
+#define	ACC	BIT(7)		/* ALU sets condition codes */
 #define	BANK_A_ACTIVE_LOW	(_ALB | _ALW | _ALE | _SFL)
 
 	/* Bank B - General Purpose register signals */
@@ -300,7 +317,7 @@ typedef	uint32_t	signal_word;
 #define	_ME	BIT(26)		/* Memory enable */
 #define	AS0	BIT(27)		/* Address Space selector; see below */
 #define	AS1	BIT(28)		/* Address Space selector; see below */
-	/* bit 29 available for future expansion */
+#define	BCC	BIT(29)		/* Bus sets condition codes (only Z and N) */
 #define	_HLT	BIT(30)		/* HALT */
 #define	_ucSR	BIT(31)		/* microcode step reset (_TR in Bases' code) */
 #define	BANK_D_ACTIVE_LOW	(_MAW | _MW | _ME | _HLT | _ucSR)
@@ -495,6 +512,12 @@ AS(unsigned int reg)
 	return assigs[reg];
 }
 
+static signal_word
+reg_BCC(unsigned int reg)
+{
+	return reg == PC ? 0 : BCC;
+}
+
 /*
  * decode_rom_init --
  *
@@ -635,18 +658,19 @@ fill_insn(unsigned int opcode, signal_word *steps, unsigned int nsteps)
  *
  * Generate the microcode steps to fetch an immediate value into the
  * register corresponding to the specified control signal.  Pass in 0
- * if you want only the IV register.
+ * if you want only the IV register.  bcc should be BCC if loading the
+ * immediate upates the condition codes, and 0 otherwise.
  *
  * N.B. Consumes 2 microcode steps.
  */
 void
-gen_imm(signal_word *steps, signal_word regw)
+gen_imm(signal_word *steps, signal_word regw, signal_word bcc)
 {
 	/* MA <- PC, advance PC */
 	steps[0] = _MAW | _PCE | PCA;
 
 	/* IV,reg <- MEM[I] */
-	steps[1] = IMMVAL(regw);
+	steps[1] = IMMVAL(regw) | bcc;
 }
 
 /*
@@ -678,11 +702,13 @@ gen_MOV_reg(void)
 				 * is "MOV Ra, Ra", but we allow all of them.
 				 * Note also that "MOV PC, PC" is how we
 				 * encode HLT.
+				 *
+				 * N.B. WE DO NOT UPDATE THE CCs ON A NOP.
 				 */
 				steps[0] = dreg == PC ? _HLT : 0;
 			} else {
-				/* Rx <- Ry */
-				steps[0] = _W(dreg) | _E(sreg);
+				/* Rx <- Ry, CC <- Bus */
+				steps[0] = _W(dreg) | _E(sreg) | reg_BCC(dreg);
 			}
 			fill_insn(OPCODE(MOV, dreg, sreg), steps,
 			    NSTEPS(steps));
@@ -714,8 +740,8 @@ gen_MOV_imm(void)
 	printf("Generating MOV Rd <- IMM...");
 
 	for (dreg = Ra; dreg <= PC; dreg++) {
-		/* Rx <- IMM */
-		gen_imm(steps, _W(dreg));
+		/* Rx <- IMM, CC <- Bus */
+		gen_imm(steps, _W(dreg), reg_BCC(dreg));
 
 		fill_insn(OPCODE(MOV, dreg, IMM), steps, NSTEPS(steps));
 	}
@@ -772,7 +798,7 @@ gen_MOV_cond_jmp(void)
 	 */
 
 	/* PC <- IMM */
-	gen_imm(true_steps, _PCW);
+	gen_imm(true_steps, _PCW, 0);
 
 	/* JC */
 	fill_carry_insn(OPCODE(MOV, IMM, CC_C), false, false_steps,
@@ -836,8 +862,8 @@ gen_CALL(void)
 	/* IV <- IMM */
 	gen_imm(steps, 0);
 
-	/* ALU_R < SP - 1 (suppress flags) */
-	steps[2] = _SPE | _ALW | ALS(A_MINUS_B) | _SFL;
+	/* ALU_R < SP - 1 */
+	steps[2] = _SPE | _ALW | ALS(A_MINUS_B);
 
 	/* SP,MA <- ALU_R */
 	steps[3] = _SPW | _MAW | _ALE;
@@ -876,8 +902,8 @@ gen_SPA(void)
 	/* ALU_B <- IMM */
 	gen_imm(steps, _ALB);
 
-	/* ALU_R <- SP + ALU_B (suppress flags) */
-	steps[2] = _SPE | _ALW | ALS(A_PLUS_B) | _SFL;
+	/* ALU_R <- SP + ALU_B */
+	steps[2] = _SPE | _ALW | ALS(A_PLUS_B);
 
 	/* SP <- ALU_R */
 	steps[3] = _SPW | _ALE;
@@ -942,8 +968,8 @@ gen_LD_reg(void)
 			/* MA <- Rx */
 			steps[0] = _MAW | _E(sreg);
 
-			/* Ry <- MEM[AS] */
-			steps[1] = _W(dreg) | MEM(AS(sreg));
+			/* Ry <- MEM[AS], CC <- Bus */
+			steps[1] = _W(dreg) | MEM(AS(sreg) | reg_BCC(dreg));
 
 			fill_insn(OPCODE(LD, dreg, sreg), steps, NSTEPS(steps));
 		}
@@ -977,8 +1003,8 @@ gen_LD_imm(void)
 	gen_imm(steps, _MAW);
 
 	for (dreg = Ra; dreg <= PC; dreg++) {
-		/* Rx <- MEM[D] */
-		steps[2] = _W(dreg) | MEM(AS_D);
+		/* Rx <- MEM[D], CC <- Bus */
+		steps[2] = _W(dreg) | MEM(AS_D) | reg_BCC(dreg);
 
 		fill_insn(OPCODE(LD, dreg, IMM), steps, NSTEPS(steps));
 	}
@@ -1009,17 +1035,17 @@ gen_LD_SP_rel(void)
 	printf("Generating LD Rx, IMM[SP]...");
 
 	/* ALU_B <- IMM */
-	gen_imm(steps, _ALB);
+	gen_imm(steps, _ALB, 0);
 
-	/* ALU_R <- SP + ALU_B (suppress flags) */
-	steps[2] = _SPE | _ALW | ALS(A_PLUS_B) | _SFL;
+	/* ALU_R <- SP + ALU_B */
+	steps[2] = _SPE | _ALW | ALS(A_PLUS_B);
 
 	/* MA <- ALU_R */
 	steps[3] = _MAW | _ALE;
 
 	for (dreg = Ra; dreg <= Rd; dreg++) {
-		/* Rx <- MEM[S] */
-		steps[4] = _W(dreg) | MEM(AS_S);
+		/* Rx <- MEM[S], CC <- Bus */
+		steps[4] = _W(dreg) | MEM(AS_S) | reg_BCC(dreg);
 
 		fill_insn(OPCODE(LD, SPa, dreg), steps, NSTEPS(steps));
 	}
@@ -1055,8 +1081,8 @@ gen_POP(void)
 	steps[1] = _SPW | _ALE;
 
 	for (dreg = Ra; dreg <= PC; dreg++) {
-		/* Rx <- MEM(S) (old SP in MA) */
-		steps[2] = _W(dreg) | MEM(AS_S);
+		/* Rx <- MEM(S) (old SP in MA), CC <- Bus */
+		steps[2] = _W(dreg) | MEM(AS_S) | reg_BCC(dreg);
 
 		fill_insn(OPCODE(LD, dreg, SPa), steps, NSTEPS(steps));
 	}
@@ -1089,11 +1115,11 @@ gen_INB(void)
 	printf("Generating INB Rd <- [IMM]...");
 
 	/* MA <- IMM */
-	gen_imm(steps, _MAW);
+	gen_imm(steps, _MAW, 0);
 
 	for (dreg = Ra; dreg <= Rd; dreg++) {
-		/* Rx <- MEM(IO) */
-		steps[2] = _W(dreg) | MEM(AS_IO);
+		/* Rx <- MEM(IO), CC <- Bus */
+		steps[2] = _W(dreg) | MEM(AS_IO) | reg_BCC(dreg);
 
 		fill_insn(OPCODE(LD, IMM, dreg), steps, NSTEPS(steps));
 	}
@@ -1125,8 +1151,8 @@ gen_LDI(void)
 	steps[0] = _MAW | _E(Ra);
 
 	for (dreg = Ra; dreg <= PC; dreg++) {
-		/* Rx <- MEM[I] */
-		steps[1] = _W(dreg) | MEM(AS_I);
+		/* Rx <- MEM[I], CC <- Bus */
+		steps[1] = _W(dreg) | MEM(AS_I), reg_BCC(dreg);
 
 		fill_insn(OPCODE(LD, dreg, PC), steps, NSTEPS(steps));
 	}
@@ -1448,8 +1474,8 @@ gen_INC(void)
 	printf("Generating INC...");
 
 	for (dreg = Ra; dreg <= Rd; dreg++) {
-		/* ALU_R <- Rx + 1 */
-		steps[0] = _ALW | _E(dreg) | ALS(A_PLUS_B) | ALC;
+		/* ALU_R <- Rx + 1, CC <- ALU */
+		steps[0] = _ALW | _E(dreg) | ALS(A_PLUS_B) | ALC | ACC;
 
 		/* Rx <- ALU_R */
 		steps[1] = _W(dreg) | _ALE;
@@ -1482,8 +1508,8 @@ gen_DEC(void)
 	printf("Generating DEC...");
 
 	for (dreg = Ra; dreg <= Rd; dreg++) {
-		/* ALU_R <- Rx - 1 */
-		steps[0] = _ALW | _E(dreg) | ALS(A_MINUS_B);
+		/* ALU_R <- Rx - 1, CC <- ALU */
+		steps[0] = _ALW | _E(dreg) | ALS(A_MINUS_B) | ACC;
 
 		/* Rx <- ALU_R */
 		steps[1] = _W(dreg) | _ALE;
@@ -1532,9 +1558,9 @@ gen_ADD_ADC(void)
 		true_steps[0] = false_steps[0] =
 		    _ALB | _E(Rb);
 
-		/* ALU_R <- Rx + ALU_B */
+		/* ALU_R <- Rx + ALU_B, CC <- ALU */
 		true_steps[1] = false_steps[1] =
-		    _ALW | _E(dreg) | ALS(A_PLUS_B);
+		    _ALW | _E(dreg) | ALS(A_PLUS_B) | ACC;
 		true_steps[1] |= ALC;
 
 		/* Rx <- ALU_R */
@@ -1606,9 +1632,9 @@ gen_SUB_SBC(void)
 		true_steps[0] = false_steps[0] =
 		    _ALB | _E(Rb);
 
-		/* ALU_R <- Rx - ALU_B */
+		/* ALU_R <- Rx - ALU_B, CC <- ALU */
 		true_steps[1] = false_steps[1] =
-		    _ALW | _E(dreg) | ALS(A_MINUS_B) | ALC;
+		    _ALW | _E(dreg) | ALS(A_MINUS_B) | ALC | ACC;
 		false_steps[1] &= ~ALC;
 
 		/* Rx <- ALU_R */
@@ -1643,9 +1669,9 @@ gen_SUB_SBC(void)
 		true_steps[0] = false_steps[0] =
 		    _ALB | _E(Rb);
 
-		/* ALU_R <- ALU_B - Rx */
+		/* ALU_R <- ALU_B - Rx, CC <- ALU */
 		true_steps[1] = false_steps[1] =
-		    _ALW | _E(dreg) | ALS(B_MINUS_A) | ALC;
+		    _ALW | _E(dreg) | ALS(B_MINUS_A) | ALC | ACC;
 		false_steps[1] &= ~ALC;
 
 		/* Rx <- ALU_R */
@@ -1689,8 +1715,8 @@ gen_AND(void)
 		/* ALU_B <- Rx */
 		steps[0] = _ALB | _E(dreg);
 
-		/* ALU_R <- Rx & ALU_B */
-		steps[1] = _ALW | _E(dreg) | ALS(A_AND_B);
+		/* ALU_R <- Rx & ALU_B, CC <- ALU */
+		steps[1] = _ALW | _E(dreg) | ALS(A_AND_B) | ACC;
 
 		/* Rx <- ALU_R */
 		steps[2] = _W(dreg) | _ALE;
@@ -1727,8 +1753,8 @@ gen_OR(void)
 		/* ALU_B <- Rx */
 		steps[0] = _ALB | _E(dreg);
 
-		/* ALU_R <- Rx | ALU_B */
-		steps[1] = _ALW | _E(dreg) | ALS(A_OR_B);
+		/* ALU_R <- Rx | ALU_B, CC <- ALU */
+		steps[1] = _ALW | _E(dreg) | ALS(A_OR_B) | ACC;
 
 		/* Rx <- ALU_R */
 		steps[2] = _W(dreg) | _ALE;
@@ -1765,8 +1791,8 @@ gen_XOR(void)
 		/* ALU_B <- Rx */
 		steps[0] = _ALB | _E(dreg);
 
-		/* ALU_R <- Rx ^ ALU_B */
-		steps[1] = _ALW | _E(dreg) | ALS(A_XOR_B);
+		/* ALU_R <- Rx ^ ALU_B, CC <- ALU */
+		steps[1] = _ALW | _E(dreg) | ALS(A_XOR_B) | ACC;
 
 		/* Rx <- ALU_R */
 		steps[2] = _W(dreg) | _ALE;
@@ -1800,8 +1826,8 @@ gen_NOT(void)
 	printf("Generating NOT...");
 
 	for (dreg = Ra; dreg <= Rd; dreg++) {
-		/* ALU_R <- ~Rx */
-		steps[0] = _ALW | _E(dreg) | ALS(B_MINUS_A);
+		/* ALU_R <- ~Rx, CC <- ALU */
+		steps[0] = _ALW | _E(dreg) | ALS(B_MINUS_A) | ACC;
 
 		/* Rx <- ALU_R */
 		steps[1] = _W(dreg) | _ALE;
@@ -1848,8 +1874,8 @@ gen_CMP(void)
 		/* ALU_B <- Rx */
 		steps[0] = _ALB | _E(reg);
 
-		/* ALU_R <- ALU_B - Rx */
-		steps[1] = _ALW | _E(reg) | ALS(B_MINUS_A) | ALC;
+		/* ALU_R <- ALU_B - Rx, CC <- ALU */
+		steps[1] = _ALW | _E(reg) | ALS(B_MINUS_A) | ALC | ACC;
 
 		fill_insn(ALU_OPCODE(true, A_OR_B, reg), steps,
 		    NSTEPS(steps));
@@ -1865,8 +1891,8 @@ gen_CMP(void)
 		/* ALU_B <- Rx */
 		steps[0] = _ALB | _E(reg);
 
-		/* ALU_R <- Rx - ALU_B */
-		steps[1] = _ALW | _E(reg) | ALS(A_MINUS_B) | ALC;
+		/* ALU_R <- Rx - ALU_B, CC <- ALU */
+		steps[1] = _ALW | _E(reg) | ALS(A_MINUS_B) | ALC | ACC;
 
 		fill_insn(ALU_OPCODE(true, A_AND_B, reg), steps,
 		    NSTEPS(steps));
@@ -1899,8 +1925,8 @@ gen_TST(void)
 	printf("Generating TST...");
 
 	for (reg = Ra; reg <= Rd; reg++) {
-		/* ALU_R <- Rx + 0 */
-		steps[0] = _ALW | _E(reg) | ALS(A_PLUS_B);
+		/* ALU_R <- Rx + 0, CC <- ALU */
+		steps[0] = _ALW | _E(reg) | ALS(A_PLUS_B) | ACC;
 
 		fill_insn(ALU_OPCODE(true, NOT_A, reg), steps,
 		    NSTEPS(steps));
