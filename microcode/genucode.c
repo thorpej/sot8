@@ -287,7 +287,7 @@ typedef	uint32_t	signal_word;
 #define	_ALW	BIT(5)		/* ALU_R write */
 #define	_ALE	BIT(6)		/* ALU_R enable */
 #define	ACC	BIT(7)		/* ALU sets condition codes */
-#define	BANK_A_ACTIVE_LOW	(_ALB | _ALW | _ALE | _SFL)
+#define	BANK_A_ACTIVE_LOW	(_ALB | _ALW | _ALE)
 
 	/* Bank B - General Purpose register signals */
 #define	_RaW	BIT(8)		/* Ra write */
@@ -860,7 +860,7 @@ gen_CALL(void)
 	printf("Generating CALL...");
 
 	/* IV <- IMM */
-	gen_imm(steps, 0);
+	gen_imm(steps, 0, 0);
 
 	/* ALU_R < SP - 1 */
 	steps[2] = _SPE | _ALW | ALS(A_MINUS_B);
@@ -900,7 +900,7 @@ gen_SPA(void)
 	printf("Generating SPA #IMM...");
 
 	/* ALU_B <- IMM */
-	gen_imm(steps, _ALB);
+	gen_imm(steps, _ALB, 0);
 
 	/* ALU_R <- SP + ALU_B */
 	steps[2] = _SPE | _ALW | ALS(A_PLUS_B);
@@ -1000,7 +1000,7 @@ gen_LD_imm(void)
 	printf("Generating LD Rd <- [IMM]...");
 
 	/* MA <- IMM */
-	gen_imm(steps, _MAW);
+	gen_imm(steps, _MAW, 0);
 
 	for (dreg = Ra; dreg <= PC; dreg++) {
 		/* Rx <- MEM[D], CC <- Bus */
@@ -1238,7 +1238,7 @@ gen_ST_imm(void)
 	printf("Generating ST [IMM] <- Rs...");
 
 	/* MA <- IMM */
-	gen_imm(steps, _MAW);
+	gen_imm(steps, _MAW, 0);
 
 	for (sreg = Ra; sreg <= PC; sreg++) {
 		/* MEM[D] <- Rx */
@@ -1273,10 +1273,10 @@ gen_ST_SP_rel(void)
 	printf("Generating ST IMM[SP], Rx...");
 
 	/* ALU_B <- IMM */
-	gen_imm(steps, _ALB);
+	gen_imm(steps, _ALB, 0);
 
 	/* ALU_R <- SP + ALU_B (suppress flags) */
-	steps[2] = _SPE | _ALW | ALS(A_PLUS_B) | _SFL;
+	steps[2] = _SPE | _ALW | ALS(A_PLUS_B);
 
 	/* MA <- ALU_R */
 	steps[3] = _MAW | _ALE;
@@ -1349,7 +1349,7 @@ gen_PUSH_imm(void)
 	printf("Generating PUSH #IMM...");
 
 	/* IV <- IMM */
-	gen_imm(steps, 0);
+	gen_imm(steps, 0, 0);
 
 	/* ALU_R <- SP - 1 */
 	steps[2] = _ALW | _SPE | ALS(A_MINUS_B);
@@ -1390,7 +1390,7 @@ gen_OUTB(void)
 	printf("Generating OUTB [IMM] <- Rs...");
 
 	/* MA <- IMM */
-	gen_imm(steps, _MAW);
+	gen_imm(steps, _MAW, 0);
 
 	for (sreg = Ra; sreg <= Rd; sreg++) {
 		/* MEM[IO] <- Rx */
