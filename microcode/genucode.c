@@ -60,7 +60,7 @@ SOFTWARE.
  * The IV register is cleared at the end of every instruction (by snooping
  * the assertion of the _ucSR signal).
  *
- * This adds _IVE and _IVW signals.
+ * This adds _IVE and IVW signals.
  *
  * ==> Changes to the CALL instruction
  *
@@ -307,9 +307,9 @@ typedef	uint32_t	signal_word;
 #define	_PCE	BIT(19)		/* PC enable */
 #define	PCA	BIT(20)		/* PC advance */
 #define	_IRW	BIT(21)		/* Insn register write */
-#define	_IVW	BIT(21)		/* IV write */
+#define	IVW	BIT(21)		/* IV write */
 #define	_IVE	BIT(22)		/* IV enable */
-#define	BANK_C_ACTIVE_LOW	(_SPW | _SPE | _PCW | _PCE | _IRW | _IVW | _IVE)
+#define	BANK_C_ACTIVE_LOW	(_SPW | _SPE | _PCW | _PCE | _IRW | _IVE)
 
 	/* Bank D - Memory and misc control signals */
 #define	_MAW	BIT(24)		/* Memory address write */
@@ -332,7 +332,7 @@ typedef	uint32_t	signal_word;
 /* Short-hand for some common microcode statements. */
 #define	MEM(as)		((as) | _ME)
 #define	MEMW(as)	((as) | _MW)
-#define	IMMVAL(w)	((w)  | _IVW | MEM(AS_I))
+#define	IMMVAL(w)	((w)  | IVW | MEM(AS_I))
 
 #define	ACTIVE_LOW_SIGNALS						\
 	(BANK_A_ACTIVE_LOW | BANK_B_ACTIVE_LOW | BANK_C_ACTIVE_LOW |	\
