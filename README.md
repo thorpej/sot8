@@ -197,7 +197,7 @@ and stores.  I wasn't willing to do that without a different opcode.
 We hijack the "`LD Rx, PC`" and "`ST PC, Rx`" encodings to do this, and
 use _Ra_ as the enforced address register.
 
-### INB / OUTB instruction for I/O space access
+### INB / OUTB instructions for I/O space access
 
 To support I/O space, INB and OUTB instructions are added to
 the LD and ST classes.  These instructions all use an 8-bit
