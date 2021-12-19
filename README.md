@@ -32,7 +32,7 @@ The Bates CPU has a single `PGM` signal to select program memory, and if
 that signal is not asserted, then memory accesses hit data memory.  I wanted
 the SoT8 to be able to support additional address spaces (specifically,
 an I/O space), so I replaced the single `PGM` signal with a pair of signals,
-`AS0` and `AS1'.  These signals allow us to select one of 4 address spaces:
+`AS0` and `AS1`.  These signals allow us to select one of 4 address spaces:
 
 * D-space (data memory)
 * I-space (program memory)
