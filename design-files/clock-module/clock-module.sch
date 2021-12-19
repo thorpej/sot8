@@ -644,22 +644,11 @@ Wire Wire Line
 	4150 4250 4350 4250
 Wire Wire Line
 	5150 4250 5150 4350
-Wire Wire Line
-	4950 4350 5000 4350
 Connection ~ 5150 4350
 Wire Wire Line
 	5150 4350 5150 4450
 Text GLabel 5900 4350 2    50   Output ~ 0
 CLK
-Text GLabel 5900 4650 2    50   Output ~ 0
-~CLK
-Wire Wire Line
-	5000 4350 5000 4650
-Wire Wire Line
-	5000 4650 5900 4650
-Connection ~ 5000 4350
-Wire Wire Line
-	5000 4350 5150 4350
 Wire Wire Line
 	5750 4350 5800 4350
 $Comp
@@ -969,4 +958,8 @@ F 3 "" H 4450 6450 50  0001 C CNN
 	0    -1   -1   0   
 $EndComp
 NoConn ~ 4450 6300
+Text Notes 3000 1250 2    50   ~ 0
+Clock frequency range: 0.720Hz - 481Hz
+Wire Wire Line
+	4950 4350 5150 4350
 $EndSCHEMATC
