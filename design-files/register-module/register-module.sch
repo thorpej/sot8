@@ -4504,4 +4504,6 @@ F 3 "" H 14950 7500 50  0001 C CNN
 $EndComp
 Wire Wire Line
 	13400 1350 13400 1400
+Text Notes 15400 6050 2    50   ~ 0
+Nominal frequency: 718 Hz
 $EndSCHEMATC
