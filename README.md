@@ -98,7 +98,7 @@ Bates design.
 The Bates CPU hard-codes the B-operand of the ALU to either 0 or _Rb_.
 This is largely because the opcode doesn't have room for both the ALU
 function **and** 2 registers.  However, Bates baked this into the hardware;
-_Rb_ has a back-door input intot he ALU.  I don't like this approach for
+_Rb_ has a back-door input into the ALU.  I don't like this approach for
 a couple of reasons:
 
 1. It makes the _Rb_ register different from all of the other General Purpose
@@ -155,7 +155,7 @@ instruction, it seemed like a good idea to be able to pass function
 arguments on the stack.  But accessing them in the callee is really
 tough without the ability to load from an offset relative to the stack
 pointer.  Happily, the _ALU\_B_ register makes it really easy for us
-to this; all we need to do is fine a pair of opcods that we can hijack
+to this; all we need to do is find a pair of opcods that we can hijack
 for it.  Limiting these to the GPRs seems pretty reasonable, so these
 are encoded as "`LD SPa, Rx`" and "`ST Rx, SPa`", followed by an immediate
 value to use as the offset.  Note that in this encoding, the source and
@@ -175,7 +175,7 @@ be able to push an immediate value onto the stack directly:
 
 ```
 	mov	%r2, #0xff
-	pusH	%r2
+	push	%r2
 ```
 
 ### SPA (Stack Pointer Adjust) instruction
