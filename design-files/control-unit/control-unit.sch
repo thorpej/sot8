@@ -1961,7 +1961,7 @@ L Device:R_Small R501
 U 1 1 630D6B4C
 P 700 5200
 F 0 "R501" H 759 5246 50  0000 L CNN
-F 1 "1K" H 759 5155 50  0000 L CNN
+F 1 "100K" H 759 5155 50  0000 L CNN
 F 2 "Resistor_THT:R_Axial_DIN0204_L3.6mm_D1.6mm_P5.08mm_Horizontal" H 700 5200 50  0001 C CNN
 F 3 "~" H 700 5200 50  0001 C CNN
 F 4 "594-SFR16S0001001JR5" H 700 5200 50  0001 C CNN "Mouser"
@@ -1984,7 +1984,7 @@ Text GLabel 700  5500 3    50   Output ~ 0
 Wire Wire Line
 	700  5300 700  5400
 Wire Wire Line
-	950  5400 700  5400
+	950  5400 900  5400
 Connection ~ 700  5400
 Wire Wire Line
 	700  5400 700  5500
@@ -3826,4 +3826,31 @@ Wire Wire Line
 	10100 5450 9550 5450
 Connection ~ 10100 5450
 Connection ~ 9550 5450
+$Comp
+L Device:CP1_Small C?
+U 1 1 63D116B5
+P 900 5550
+F 0 "C?" H 991 5596 50  0000 L CNN
+F 1 "1µF" H 991 5505 50  0000 L CNN
+F 2 "" H 900 5550 50  0001 C CNN
+F 3 "~" H 900 5550 50  0001 C CNN
+	1    900  5550
+	1    0    0    -1  
+$EndComp
+Connection ~ 900  5400
+Wire Wire Line
+	900  5400 700  5400
+$Comp
+L power:GND #PWR?
+U 1 1 63D1374A
+P 900 5650
+F 0 "#PWR?" H 900 5400 50  0001 C CNN
+F 1 "GND" H 905 5477 50  0000 C CNN
+F 2 "" H 900 5650 50  0001 C CNN
+F 3 "" H 900 5650 50  0001 C CNN
+	1    900  5650
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	900  5450 900  5400
 $EndSCHEMATC
