@@ -719,17 +719,6 @@ Insn Register
 Text GLabel 5000 3750 3    50   Input ~ 0
 uc_clk
 $Comp
-L power:VCC #PWR0114
-U 1 1 6222178D
-P 5100 3750
-F 0 "#PWR0114" H 5100 3600 50  0001 C CNN
-F 1 "VCC" V 5115 3878 50  0000 L CNN
-F 2 "" H 5100 3750 50  0001 C CNN
-F 3 "" H 5100 3750 50  0001 C CNN
-	1    5100 3750
-	0    1    1    0   
-$EndComp
-$Comp
 L power:GND #PWR0115
 U 1 1 62221D2F
 P 5400 3250
@@ -1003,17 +992,6 @@ F 3 "" H 9200 3950 50  0001 C CNN
 	0    1    1    0   
 $EndComp
 Connection ~ 9200 3950
-$Comp
-L power:GND #PWR0119
-U 1 1 629B2C28
-P 9200 4650
-F 0 "#PWR0119" H 9200 4400 50  0001 C CNN
-F 1 "GND" V 9205 4522 50  0000 R CNN
-F 2 "" H 9200 4650 50  0001 C CNN
-F 3 "" H 9200 4650 50  0001 C CNN
-	1    9200 4650
-	0    1    1    0   
-$EndComp
 Text Notes 9650 4200 0    50   Italic 10
 CC\nLatch
 Wire Wire Line
@@ -3858,7 +3836,7 @@ U 1 1 63D3F3F9
 P 1100 5400
 F 0 "R549" V 904 5400 50  0000 C CNN
 F 1 "1K" V 995 5400 50  0000 C CNN
-F 2 "" H 1100 5400 50  0001 C CNN
+F 2 "Resistor_THT:R_Axial_DIN0204_L3.6mm_D1.6mm_P5.08mm_Horizontal" H 1100 5400 50  0001 C CNN
 F 3 "~" H 1100 5400 50  0001 C CNN
 F 4 "594-SFR16S0001001JR5" V 1100 5400 50  0001 C CNN "Mouser"
 	1    1100 5400
@@ -3866,4 +3844,13 @@ F 4 "594-SFR16S0001001JR5" V 1100 5400 50  0001 C CNN "Mouser"
 $EndComp
 Wire Wire Line
 	900  5400 1000 5400
+Text GLabel 5100 3750 3    50   Input ~ 0
+~RST
+Text GLabel 15000 5200 3    50   Output ~ 0
+cc_rst
+Wire Wire Line
+	15000 5200 15000 4900
+Connection ~ 15000 4900
+Text GLabel 9200 4650 0    50   Input ~ 0
+cc_rst
 $EndSCHEMATC
