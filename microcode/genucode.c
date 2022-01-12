@@ -111,7 +111,7 @@ SOFTWARE.
  * So, instead of the selector bank that selects Rb or 0, we add an
  * ALU_B register that is cleared at the end of every instruction
  * (with the assertion of _ucSR).  This provides the hard-coded 0 for
- * instructions that require it.  Then, instead of an ALB signal
+ * instructions that require it.  Then, instead of an _ALB signal
  * to use the back-door from Rb, we burn a microcode cycle copying Rb
  * into ALU_B for instruction that operate on Rb.  This costs us a
  * microcode cycle for these common operations, but raw performance is
@@ -283,11 +283,11 @@ typedef	uint32_t	signal_word;
 #define	ALS0	BIT(1)		/* ALU selector; see below */
 #define	ALS1	BIT(2)		/* ALU selector; see below */
 #define	ALS2	BIT(3)		/* ALU selector; see below */
-#define	ALB	BIT(4)		/* ALU_B write */
+#define	_ALB	BIT(4)		/* ALU_B write */
 #define	_ALW	BIT(5)		/* ALU_R write */
 #define	_ALE	BIT(6)		/* ALU_R enable */
 #define	ACC	BIT(7)		/* ALU sets condition codes */
-#define	BANK_A_ACTIVE_LOW	(_ALW | _ALE)
+#define	BANK_A_ACTIVE_LOW	(_ALB | _ALW | _ALE)
 
 	/* Bank B - General Purpose register signals */
 #define	_RaW	BIT(8)		/* Ra write */
@@ -900,7 +900,7 @@ gen_SPA(void)
 	printf("Generating SPA #IMM...");
 
 	/* ALU_B <- IMM */
-	gen_imm(steps, ALB, 0);
+	gen_imm(steps, _ALB, 0);
 
 	/* ALU_R <- SP + ALU_B */
 	steps[2] = _SPE | _ALW | ALS(A_PLUS_B);
@@ -1035,7 +1035,7 @@ gen_LD_SP_rel(void)
 	printf("Generating LD Rx, IMM[SP]...");
 
 	/* ALU_B <- IMM */
-	gen_imm(steps, ALB, 0);
+	gen_imm(steps, _ALB, 0);
 
 	/* ALU_R <- SP + ALU_B */
 	steps[2] = _SPE | _ALW | ALS(A_PLUS_B);
@@ -1273,7 +1273,7 @@ gen_ST_SP_rel(void)
 	printf("Generating ST IMM[SP], Rx...");
 
 	/* ALU_B <- IMM */
-	gen_imm(steps, ALB, 0);
+	gen_imm(steps, _ALB, 0);
 
 	/* ALU_R <- SP + ALU_B (suppress flags) */
 	steps[2] = _SPE | _ALW | ALS(A_PLUS_B);
@@ -1556,7 +1556,7 @@ gen_ADD_ADC(void)
 	for (dreg = Ra; dreg <= Rd; dreg++) {
 		/* ALU_B <- Rb */
 		true_steps[0] = false_steps[0] =
-		    ALB | _E(Rb);
+		    _ALB | _E(Rb);
 
 		/* ALU_R <- Rx + ALU_B, CC <- ALU */
 		true_steps[1] = false_steps[1] =
@@ -1630,7 +1630,7 @@ gen_SUB_SBC(void)
 	for (dreg = Ra; dreg <= Rd; dreg++) {
 		/* ALU_B <- Rb */
 		true_steps[0] = false_steps[0] =
-		    ALB | _E(Rb);
+		    _ALB | _E(Rb);
 
 		/* ALU_R <- Rx - ALU_B, CC <- ALU */
 		true_steps[1] = false_steps[1] =
@@ -1667,7 +1667,7 @@ gen_SUB_SBC(void)
 	for (dreg = Ra; dreg <= Rd; dreg++) {
 		/* ALU_B <- Rb */
 		true_steps[0] = false_steps[0] =
-		    ALB | _E(Rb);
+		    _ALB | _E(Rb);
 
 		/* ALU_R <- ALU_B - Rx, CC <- ALU */
 		true_steps[1] = false_steps[1] =
@@ -1713,7 +1713,7 @@ gen_AND(void)
 
 	for (dreg = Ra; dreg <= Rd; dreg++) {
 		/* ALU_B <- Rx */
-		steps[0] = ALB | _E(dreg);
+		steps[0] = _ALB | _E(dreg);
 
 		/* ALU_R <- Rx & ALU_B, CC <- ALU */
 		steps[1] = _ALW | _E(dreg) | ALS(A_AND_B) | ACC;
@@ -1751,7 +1751,7 @@ gen_OR(void)
 
 	for (dreg = Ra; dreg <= Rd; dreg++) {
 		/* ALU_B <- Rx */
-		steps[0] = ALB | _E(dreg);
+		steps[0] = _ALB | _E(dreg);
 
 		/* ALU_R <- Rx | ALU_B, CC <- ALU */
 		steps[1] = _ALW | _E(dreg) | ALS(A_OR_B) | ACC;
@@ -1789,7 +1789,7 @@ gen_XOR(void)
 
 	for (dreg = Ra; dreg <= Rd; dreg++) {
 		/* ALU_B <- Rx */
-		steps[0] = ALB | _E(dreg);
+		steps[0] = _ALB | _E(dreg);
 
 		/* ALU_R <- Rx ^ ALU_B, CC <- ALU */
 		steps[1] = _ALW | _E(dreg) | ALS(A_XOR_B) | ACC;
@@ -1872,7 +1872,7 @@ gen_CMP(void)
 
 	for (reg = Ra; reg <= Rd; reg++) {
 		/* ALU_B <- Rx */
-		steps[0] = ALB | _E(reg);
+		steps[0] = _ALB | _E(reg);
 
 		/* ALU_R <- ALU_B - Rx, CC <- ALU */
 		steps[1] = _ALW | _E(reg) | ALS(B_MINUS_A) | ALC | ACC;
@@ -1889,7 +1889,7 @@ gen_CMP(void)
 
 	for (reg = Ra; reg <= Rd; reg++) {
 		/* ALU_B <- Rx */
-		steps[0] = ALB | _E(reg);
+		steps[0] = _ALB | _E(reg);
 
 		/* ALU_R <- Rx - ALU_B, CC <- ALU */
 		steps[1] = _ALW | _E(reg) | ALS(A_MINUS_B) | ALC | ACC;

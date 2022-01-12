@@ -290,7 +290,7 @@ ALS1
 Text GLabel 8700 900  1    50   Output ~ 0
 ALS2
 Text GLabel 8850 900  1    50   Output ~ 0
-ALB
+~ALB
 Text GLabel 9000 900  1    50   Output ~ 0
 ~ALW
 Text GLabel 9150 900  1    50   Output ~ 0
@@ -2627,17 +2627,6 @@ F 3 "~" H 14150 7750 50  0001 C CNN
 	0    -1   1    0   
 $EndComp
 $Comp
-L Device:LED D539
-U 1 1 6321D30E
-P 14550 7750
-F 0 "D539" V 14589 7632 50  0000 R CNN
-F 1 "GRN" V 14498 7632 50  0000 R CNN
-F 2 "LED_THT:LED_D5.0mm" H 14550 7750 50  0001 C CNN
-F 3 "~" H 14550 7750 50  0001 C CNN
-	1    14550 7750
-	0    -1   -1   0   
-$EndComp
-$Comp
 L Device:R_Small R540
 U 1 1 6321D314
 P 14550 8050
@@ -2682,17 +2671,6 @@ F 3 "~" H 13350 8050 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L power:GND #PWR0176
-U 1 1 6321D32C
-P 14550 8150
-F 0 "#PWR0176" H 14550 7900 50  0001 C CNN
-F 1 "GND" H 14555 7977 50  0000 C CNN
-F 2 "" H 14550 8150 50  0001 C CNN
-F 3 "" H 14550 8150 50  0001 C CNN
-	1    14550 8150
-	1    0    0    -1  
-$EndComp
-$Comp
 L power:GND #PWR0177
 U 1 1 6321D33E
 P 13350 8150
@@ -2718,7 +2696,7 @@ Text GLabel 13750 7600 1    50   Input ~ 0
 Text GLabel 14150 7600 1    50   Input ~ 0
 ~ALW
 Text GLabel 14550 7600 1    50   Input ~ 0
-ALB
+~ALB
 $Comp
 L Device:LED D524
 U 1 1 6323C3F1
@@ -3853,4 +3831,26 @@ Wire Wire Line
 Connection ~ 15000 4900
 Text GLabel 9200 4650 0    50   Input ~ 0
 cc_rst
+$Comp
+L power:VCC #PWR?
+U 1 1 623040CC
+P 14550 8150
+F 0 "#PWR?" H 14550 8000 50  0001 C CNN
+F 1 "VCC" H 14565 8323 50  0000 C CNN
+F 2 "" H 14550 8150 50  0001 C CNN
+F 3 "" H 14550 8150 50  0001 C CNN
+	1    14550 8150
+	-1   0    0    1   
+$EndComp
+$Comp
+L Device:LED D539
+U 1 1 6321D30E
+P 14550 7750
+F 0 "D539" V 14500 7650 50  0000 R CNN
+F 1 "GRN" V 14600 7650 50  0000 R CNN
+F 2 "LED_THT:LED_D5.0mm" H 14550 7750 50  0001 C CNN
+F 3 "~" H 14550 7750 50  0001 C CNN
+	1    14550 7750
+	0    -1   1    0   
+$EndComp
 $EndSCHEMATC
