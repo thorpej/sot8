@@ -49,7 +49,7 @@ Registers Module.  When loading an immediate value from the instruction
 stream, the value is always stored in the IV register, in addition to being
 stored in another destination register as needed.
 
-This adds `_IVE` and `IVW` signals.
+This adds `_IVE` and `_IVW` signals.
 
 ### Changes to the _call_ instruction
 
