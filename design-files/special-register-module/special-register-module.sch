@@ -171,10 +171,10 @@ BUS_D6
 Text GLabel 4200 1200 1    50   Output ~ 0
 BUS_D7
 $Comp
-L 74xx:74LS245 U409
+L 74xx:74LS245 U408
 U 1 1 61BE426D
 P 9200 1700
-F 0 "U409" V 9450 1000 50  0000 R CNN
+F 0 "U408" V 9450 1000 50  0000 R CNN
 F 1 "74HCT245" V 9350 1050 50  0000 R CNN
 F 2 "Package_DIP:DIP-20_W7.62mm_Socket" H 9200 1700 50  0001 C CNN
 F 3 "http://www.ti.com/lit/gpn/sn74LS245" H 9200 1700 50  0001 C CNN
@@ -259,10 +259,10 @@ Text GLabel 6550 1950 0    50   Input ~ 0
 BUS_D6
 Text GLabel 6550 2050 0    50   Input ~ 0
 BUS_D7
-Text GLabel 5650 2350 0    50   Input ~ 0
+Text GLabel 6550 2250 0    50   Input ~ 0
 CLK
-Text GLabel 5650 2150 0    50   Input ~ 0
-IVW
+Text GLabel 6550 2350 0    50   Input ~ 0
+~IVW
 Text GLabel 9800 2200 2    50   Input ~ 0
 ~IVE
 Wire Wire Line
@@ -316,31 +316,7 @@ Text GLabel 9300 1200 1    50   Output ~ 0
 BUS_D6
 Text GLabel 9400 1200 1    50   Output ~ 0
 BUS_D7
-$Comp
-L 74xx:74LS273 U408
-U 1 1 61BE6AF1
-P 7050 1850
-F 0 "U408" H 7300 2650 50  0000 C CNN
-F 1 "74HCT273" H 7300 2550 50  0000 C CNN
-F 2 "Package_DIP:DIP-20_W7.62mm_Socket" H 7050 1850 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74LS273" H 7050 1850 50  0001 C CNN
-	1    7050 1850
-	1    0    0    -1  
-$EndComp
-$Comp
-L 74xx:74LS08 U407
-U 1 1 61BE8065
-P 5950 2250
-F 0 "U407" H 5950 2575 50  0000 C CNN
-F 1 "74HCT08" H 5950 2484 50  0000 C CNN
-F 2 "Package_DIP:DIP-14_W7.62mm_Socket" H 5950 2250 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74LS08" H 5950 2250 50  0001 C CNN
-	1    5950 2250
-	1    0    0    -1  
-$EndComp
-Wire Wire Line
-	6250 2250 6550 2250
-Text GLabel 6550 2350 0    50   Input ~ 0
+Text GLabel 1250 2850 0    50   Input ~ 0
 ~ucSR
 Text Notes 850  1250 0    50   Italic 10
 Stack Pointer
@@ -1035,28 +1011,6 @@ pc_6
 Text GLabel 4750 5550 1    50   Input ~ 0
 pc_7
 $Comp
-L 74xx:74LS08 U407
-U 5 1 61D03C75
-P 5650 3600
-F 0 "U407" H 5880 3646 50  0000 L CNN
-F 1 "74HCT08" H 5880 3555 50  0000 L CNN
-F 2 "Package_DIP:DIP-14_W7.62mm_Socket" H 5650 3600 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74LS08" H 5650 3600 50  0001 C CNN
-	5    5650 3600
-	1    0    0    -1  
-$EndComp
-$Comp
-L power:GND #PWR0136
-U 1 1 61D077EE
-P 5650 4100
-F 0 "#PWR0136" H 5650 3850 50  0001 C CNN
-F 1 "GND" H 5655 3927 50  0000 C CNN
-F 2 "" H 5650 4100 50  0001 C CNN
-F 3 "" H 5650 4100 50  0001 C CNN
-	1    5650 4100
-	1    0    0    -1  
-$EndComp
-$Comp
 L Device:C_Small C402
 U 1 1 61D13B27
 P 1450 850
@@ -1212,45 +1166,6 @@ F 3 "" H 7050 750 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 Connection ~ 7050 750 
-$Comp
-L Device:C_Small C407
-U 1 1 61D67E66
-P 5250 2900
-F 0 "C407" H 5342 2946 50  0000 L CNN
-F 1 "0.1µF" H 5342 2855 50  0000 L CNN
-F 2 "Capacitor_THT:C_Radial_D6.3mm_H5.0mm_P2.50mm" H 5250 2900 50  0001 C CNN
-F 3 "~" H 5250 2900 50  0001 C CNN
-F 4 "80-C320C104K2R5TA" H 5250 2900 50  0001 C CNN "Mouser"
-	1    5250 2900
-	1    0    0    -1  
-$EndComp
-$Comp
-L power:GND #PWR0145
-U 1 1 61D67E6C
-P 5250 3000
-F 0 "#PWR0145" H 5250 2750 50  0001 C CNN
-F 1 "GND" H 5255 2827 50  0000 C CNN
-F 2 "" H 5250 3000 50  0001 C CNN
-F 3 "" H 5250 3000 50  0001 C CNN
-	1    5250 3000
-	1    0    0    -1  
-$EndComp
-Wire Wire Line
-	5650 3100 5650 2800
-Wire Wire Line
-	5650 2800 5250 2800
-$Comp
-L power:VCC #PWR0146
-U 1 1 61D67E74
-P 5650 2800
-F 0 "#PWR0146" H 5650 2650 50  0001 C CNN
-F 1 "VCC" H 5665 2973 50  0000 C CNN
-F 2 "" H 5650 2800 50  0001 C CNN
-F 3 "" H 5650 2800 50  0001 C CNN
-	1    5650 2800
-	1    0    0    -1  
-$EndComp
-Connection ~ 5650 2800
 $Comp
 L Device:C_Small C405
 U 1 1 61D6F6C2
@@ -1621,4 +1536,15 @@ Wire Wire Line
 	5900 6000 5900 6050
 Wire Wire Line
 	4750 5850 4750 6050
+$Comp
+L 74xx:74LS377 U407
+U 1 1 66CFD9C5
+P 7050 1850
+F 0 "U407" H 7300 2650 50  0000 C CNN
+F 1 "74HCT377" H 7300 2550 50  0000 C CNN
+F 2 "" H 7050 1850 50  0001 C CNN
+F 3 "http://www.ti.com/lit/gpn/sn74LS377" H 7050 1850 50  0001 C CNN
+	1    7050 1850
+	1    0    0    -1  
+$EndComp
 $EndSCHEMATC

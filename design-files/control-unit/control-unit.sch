@@ -326,7 +326,7 @@ PCA
 Text GLabel 4300 900  1    50   Output ~ 0
 ~IRW
 Text GLabel 4450 900  1    50   Output ~ 0
-IVW
+~IVW
 Text GLabel 4600 900  1    50   Output ~ 0
 ~IVE
 Wire Wire Line
@@ -1170,17 +1170,6 @@ Text GLabel 12650 4400 0    50   Input ~ 0
 ALU_O
 Text GLabel 12650 4700 0    50   Input ~ 0
 ALU_N
-$Comp
-L power:VCC #PWR0126
-U 1 1 62BC1922
-P 12650 5000
-F 0 "#PWR0126" H 12650 4850 50  0001 C CNN
-F 1 "VCC" V 12665 5127 50  0000 L CNN
-F 2 "" H 12650 5000 50  0001 C CNN
-F 3 "" H 12650 5000 50  0001 C CNN
-	1    12650 5000
-	0    -1   -1   0   
-$EndComp
 $Comp
 L power:GND #PWR0127
 U 1 1 62BC2254
@@ -3420,4 +3409,9 @@ F 3 "" H 2900 6800 50  0001 C CNN
 	1    2900 6800
 	1    0    0    -1  
 $EndComp
+Wire Wire Line
+	12650 5000 12650 5300
+Wire Wire Line
+	12650 5300 13150 5300
+Connection ~ 13150 5300
 $EndSCHEMATC
