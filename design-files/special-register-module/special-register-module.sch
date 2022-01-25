@@ -584,6 +584,7 @@ Text GLabel 1350 7100 0    50   Input ~ 0
 CLK
 Text GLabel 1350 4700 0    50   Input ~ 0
 CLK
+NoConn ~ 2350 6800
 Text GLabel 1350 4400 0    50   Input ~ 0
 ~PCW
 Text GLabel 1350 6800 0    50   Input ~ 0
@@ -1956,15 +1957,4 @@ F 3 "" H 8250 1700 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 Connection ~ 8250 1700
-$Comp
-L power:GND #PWR?
-U 1 1 61F12663
-P 2350 6800
-F 0 "#PWR?" H 2350 6550 50  0001 C CNN
-F 1 "GND" H 2355 6627 50  0000 C CNN
-F 2 "" H 2350 6800 50  0001 C CNN
-F 3 "" H 2350 6800 50  0001 C CNN
-	1    2350 6800
-	1    0    0    -1  
-$EndComp
 $EndSCHEMATC
