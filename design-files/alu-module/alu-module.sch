@@ -140,8 +140,6 @@ Wire Wire Line
 Wire Wire Line
 	5750 3650 5750 2050
 Wire Wire Line
-	5750 2050 5950 2050
-Wire Wire Line
 	5250 1750 5550 1750
 Wire Wire Line
 	5550 4900 4250 4900
@@ -232,12 +230,7 @@ Connection ~ 6000 1950
 Wire Wire Line
 	6000 1950 6550 1950
 Wire Wire Line
-	5950 2050 5950 4150
-Wire Wire Line
 	5950 4150 6750 4150
-Connection ~ 5950 2050
-Wire Wire Line
-	5950 2050 6550 2050
 $Comp
 L 74xx:74LS08 U308
 U 1 1 6417242F
@@ -269,7 +262,6 @@ Wire Wire Line
 	8050 4250 8050 3150
 Wire Wire Line
 	8050 3150 8650 3150
-Connection ~ 5950 4150
 Wire Wire Line
 	5250 3750 5900 3750
 Wire Wire Line
@@ -1387,4 +1379,12 @@ Wire Wire Line
 Connection ~ 3700 4050
 Wire Wire Line
 	3700 4050 4250 4050
+Wire Wire Line
+	5750 2050 6550 2050
+Wire Wire Line
+	5950 4150 5950 3650
+Wire Wire Line
+	5950 3650 5750 3650
+Connection ~ 5950 4150
+Connection ~ 5750 3650
 $EndSCHEMATC
