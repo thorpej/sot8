@@ -1587,6 +1587,93 @@ fill_insn(const struct insn *i, uint8_t insn_buf[2])
 	return 1;
 }
 
+static bool text_output;
+
+static const char * const nybble_bits[] = {
+	[0]	=	"0000",
+	[1]	=	"0001",
+	[2]	=	"0010",
+	[3]	=	"0011",
+	[4]	=	"0100",
+	[5]	=	"0101",
+	[6]	=	"0110",
+	[7]	=	"0111",
+	[8]	=	"1000",
+	[9]	=	"1001",
+	[10]	=	"1010",
+	[11]	=	"1011",
+	[12]	=	"1100",
+	[13]	=	"1101",
+	[14]	=	"1110",
+	[15]	=	"1111",
+};
+
+static const char text_output_header[] =
+    "  addr         data  \n"
+    "---------------------\n";
+
+static bool
+codegen_pass3_write_insn(int outfd, const uint8_t *insn_buf, size_t insn_size)
+{
+	ssize_t rv;
+
+	if (text_output) {
+		/*
+		 * Line is in the form of:
+		 *
+		 *   addr         data
+		 * ---------------------
+		 * 00000000     10011011
+		 * 00000001     11000101
+		 * .
+		 * .
+		 * .
+		 *
+		 * Meant to be a visual guide for setting the
+		 * programming switches.
+		 */
+		char linebuf[32];
+		size_t i;
+		int len;
+
+		/* Print out header if this is the first insn. */
+		if (current_address == 0) {
+			rv = write(outfd, text_output_header,
+				   sizeof(text_output_header) - 1);
+			if (rv != sizeof(text_output_header) - 1) {
+				errmsg("error writing header to output file");
+				error_count++;
+				return false;
+			}
+		}
+
+		for (i = 0; i < insn_size; i++) {
+			len = sprintf(linebuf, "%s%s     %s%s\n",
+			    nybble_bits[((current_address + i) >> 4) & 0xf],
+			    nybble_bits[ (current_address + i)       & 0xf],
+			    nybble_bits[(insn_buf[i] >> 4)           & 0xf],
+			    nybble_bits[ insn_buf[i]                 & 0xf]);
+			rv = write(outfd, linebuf, len);
+			if (rv != len) {
+				errmsg("error writing output file at %d",
+				    current_address);
+				error_count++;
+				return false;
+			}
+		}
+	} else {
+		rv = write(outfd, insn_buf, insn_size);
+		if (rv != (ssize_t)insn_size) {
+			errmsg("error writing output file at %d",
+			    current_address);
+			error_count++;
+			return false;
+		}
+	}
+
+	return true;
+}
+
 static void
 codegen_pass3(int outfd)
 {
@@ -1605,11 +1692,8 @@ codegen_pass3(int outfd)
 
 		case PGN_INSN:
 			insn_size = fill_insn(p->insn, insn_buf);
-			rv = write(outfd, insn_buf, insn_size);
-			if (rv != (ssize_t)insn_size) {
-				errmsg("error writing output file "
-				    "at %d", current_address);
-				error_count++;
+			if (! codegen_pass3_write_insn(outfd, insn_buf,
+						       insn_size)) {
 				return;
 			}
 			current_address += insn_size;
@@ -1635,7 +1719,7 @@ static void
 usage(void)
 {
 	fprintf(stderr,
-	    "usage: sot8as [-d dbgtype] [-o outfile] infile\n");
+	    "usage: sot8as [-d dbgtype] [-o outfile] [-t] infile\n");
 	exit(1);
 }
 
@@ -1644,12 +1728,12 @@ main(int argc, char *argv[])
 {
 	extern FILE *yyin;
 	const char *infname;
-	const char *outfname = "a.out";
+	const char *outfname = NULL;
 	FILE *infile;
 	int outfd;
 	int ch;
 
-	while ((ch = getopt(argc, argv, "d:")) != -1) {
+	while ((ch = getopt(argc, argv, "d:ot")) != -1) {
 		switch (ch) {
 		case 'd':
 			if (strcmp(optarg, "parser") == 0) {
@@ -1672,6 +1756,10 @@ main(int argc, char *argv[])
 			outfname = optarg;
 			break;
 
+		case 't':
+			text_output = true;
+			break;
+
 		default:
 			usage();
 		}
@@ -1684,6 +1772,14 @@ main(int argc, char *argv[])
 		usage();
 	}
 	infname = argv[0];
+
+	if (outfname == NULL) {
+		if (text_output) {
+			outfname = "a.txt";
+		} else {
+			outfname = "a.out";
+		}
+	}
 
 	outfd = open(outfname, O_WRONLY | O_TRUNC | O_CREAT, 0666);
 	if (outfd == -1) {
