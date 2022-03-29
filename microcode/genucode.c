@@ -969,7 +969,7 @@ gen_LD_reg(void)
 			steps[0] = _MAW | _E(sreg);
 
 			/* Ry <- MEM[AS], CC <- Bus */
-			steps[1] = _W(dreg) | MEM(AS(sreg) | reg_BCC(dreg));
+			steps[1] = _W(dreg) | MEM(AS(sreg)) | reg_BCC(dreg);
 
 			fill_insn(OPCODE(LD, dreg, sreg), steps, NSTEPS(steps));
 		}
